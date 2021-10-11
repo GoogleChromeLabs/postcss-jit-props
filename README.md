@@ -8,11 +8,9 @@
 
 <br>
 
-`postcss-jit-props` watches for CSS variables and ensures a value entry exists in the stylesheet.  
+`postcss-jit-props` watches for CSS variables and ensures a value entry exists in the stylesheet. [Try in browser](https://stackblitz.com/edit/postcss-jit-props-sandbox?file=postcss.config.js)
 
-This lets you provide a huge pool of properties for development and design, and rather than try and purge unused variables, only adds what was used.
-
-Plugin supports providing variables as **Javascript, JSON or CSS** 👍
+This lets you **provide a huge pool of properties** for development and design, and rather than try and purge unused variables, **only adds what was used**. 
 
 <br>
 
@@ -75,7 +73,7 @@ npm install --save-dev postcss-jit-props
 
 <br>
 
-**Step 2:** Add the plugin to plugins in `postcss.config.js` and **pass it your props**.
+**Step 2:** Add the plugin to plugins in `postcss.config.js` and **pass it your props (CSS || JS || JSON)**.
 
 Pass JS objects:
 ```js
