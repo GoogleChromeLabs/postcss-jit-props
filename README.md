@@ -1,22 +1,29 @@
 # PostCSS (Just In Time) Props
 
-> A CSS custom property helper based on PostCSS
+> Only ship used variables! A CSS custom property helper based on PostCSS
 
 [![Version](https://img.shields.io/npm/v/postcss-jit-props)](https://github.com/postcss/postcss-jit-props/blob/master/CHANGELOG.md)
 [![postcss compatibility](https://img.shields.io/npm/dependency-version/postcss-jit-props/peer/postcss)](https://postcss.org/)
 [![Unit Tests](https://github.com/argyleink/postcss-jit-props/actions/workflows/node.js.yml/badge.svg)](https://github.com/argyleink/postcss-jit-props/actions/workflows/node.js.yml)
 
-`postcss-jit-props` watches for CSS variables and ensures a value entry exists in the stylesheet. Only ship used variables!   
+<br>
 
-**Provide variables as Javascript or JSON or CSS.**
+`postcss-jit-props` watches for CSS variables and ensures a value entry exists in the stylesheet.  
 
-[PostCSS]: https://github.com/postcss/postcss
+This lets you provide a huge pool of properties for development and design, and rather than try and purge unused variables, only adds what was used.
 
-CSS Before:  
+Plugin supports providing variables as **Javascript, JSON or CSS** 👍
+
+<br>
+
+## Example
+
+CSS Before / During Development:  
 ```css
 .foo {
-  color: var(--red);
+  color: var(--brand-1);
   padding: var(--size-1) var(--size-2);
+  margin-block-start: var(--size-2);
   animation: var(--fade-in);
 }
 
@@ -27,20 +34,21 @@ CSS Before:
 }
 ```
 
-CSS After:  
+CSS After / Result of Plugin:  
 ```diff
 + @custom-media --dark (prefers-color-scheme: dark);
 
 + :root {
-+   --red: #f00;
++   --brand-1: #81A1C1;
 +   --size-1: 1rem;
 +   --size-2: 2rem;
 +   --fade-in: fade-in .5s ease;
 + }
 
 .foo {
-  color: var(--red);
+  color: var(--brand-1);
   padding: var(--size-1) var(--size-2);
+  margin-block-start: var(--size-2);
   animation: var(--fade-in);
 }
 
@@ -55,51 +63,50 @@ CSS After:
 + }
 ```
 
+<br>
+
 ## Usage
 
 **Step 1:** Install plugin:
 
 ```sh
-npm install --save-dev postcss postcss-jit-props
+npm install --save-dev postcss-jit-props
 ```
 
-**Step 2:** Check you project for existed PostCSS config: `postcss.config.js`
-in the project root, `"postcss"` section in `package.json`
-or `postcss` in bundle config.
+<br>
 
-If you do not use PostCSS, add it according to [official docs]
-and set this plugin in settings.
+**Step 2:** Add the plugin to plugins in `postcss.config.js` and **pass it your props**.
 
-**Step 3:** Add the plugin to plugins list and call it with your props.
-
+Pass JS objects:
 ```js
 module.exports = {
   plugins: [
     require('postcss-jit-props')({
-      '--red': '#f00',
-      '--pink': '#ffc0cb',
+      '--brand-1': '#81A1C1',
       '--size-1': '1rem',
       '--size-2': '2rem',
       '--fade-in': 'fade-in .5s ease',
       '--fade-in-@': '@keyframes fade-in {to { opacity: 1 }}',
       '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
     }),
-    require('autoprefixer')
+    require('autoprefixer'),
   ]
 }
 ```
 
-or  
+or pass CSS files 
 
 ```js
 module.exports = {
   plugins: [
     require('postcss-jit-props')([files: ['./props.css']]),
-    require('autoprefixer')
+    require('autoprefixer'),
   ]
 }
 ```
 
-Javascript objects passed in have the advantage of just-in-time inject of `@keyframes` and `@custom-media`
+or JSON ✨
+
+Javascript objects passed in have the advantage of just-in-time injection of `@keyframes` and `@custom-media`
 
 [official docs]: https://github.com/postcss/postcss#usage
