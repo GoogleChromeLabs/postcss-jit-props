@@ -107,4 +107,4 @@ module.exports = {
 
 or JSON ✨
 
-> Javascript and JSON have the advantage of just-in-time injection of `@keyframes` using the `-&` suffix
+> Javascript and JSON must use the `-&` suffix on their custom property name in order for jit-props to find associated `@keyframes`
