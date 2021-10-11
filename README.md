@@ -107,6 +107,4 @@ module.exports = {
 
 or JSON ✨
 
-Javascript objects passed in have the advantage of just-in-time injection of `@keyframes` and `@custom-media`
-
-[official docs]: https://github.com/postcss/postcss#usage
+> Javascript and JSON have the advantage of just-in-time injection of `@keyframes` using the `-&` suffix
