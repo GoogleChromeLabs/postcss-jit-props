@@ -1,6 +1,6 @@
 {
   "name": "postcss-jit-props",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PostCSS plugin to insert variables from a data source based on discovered usage",
   "keywords": [
     "postcss",
