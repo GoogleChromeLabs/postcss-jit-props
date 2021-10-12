@@ -97,7 +97,7 @@ or pass CSS files
 ```js
 module.exports = {
   plugins: [
-    require('postcss-jit-props')([files: ['./props.css']]),
+    require('postcss-jit-props')({files: ['./props.css']}),
     require('autoprefixer'),
   ]
 }
