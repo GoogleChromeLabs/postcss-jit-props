@@ -105,4 +105,4 @@ module.exports = {
 
 or JSON ✨
 
-> Javascript and JSON must use the `-&` suffix on their custom property name in order for jit-props to find associated `@keyframes`
+> Javascript and JSON must use the `-@` suffix on their custom property name in order for jit-props to find associated `@keyframes`
