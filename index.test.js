@@ -48,6 +48,21 @@ a {
   )
 })
 
+it('Can jit a single prop with spaces', async () => {
+  await run(
+`a {
+  color: var( --red );
+}`, 
+`:root {
+  --red: #f00;
+}
+a {
+  color: var( --red );
+}`, 
+  MockProps
+  )
+})
+
 it('Can jit a single prop that has fallbacks', async () => {
   await run(
 `a {
