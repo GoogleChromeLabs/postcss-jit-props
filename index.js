@@ -67,7 +67,7 @@ module.exports = (opts) => {
       if (atrule.name !== 'media' || atrule[processed]) return
 
       // extract prop from atrule params
-      let prop = atrule.params.slice(1).slice(0,-1)
+      let prop = atrule.params.replace(/[( )]+/g, '');
 
       // bail if media prop already prepended
       if (STATE.mapped.has(prop)) return
