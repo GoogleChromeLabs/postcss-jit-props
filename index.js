@@ -67,7 +67,7 @@ module.exports = (opts) => {
       if (atrule.name !== 'media' || atrule[processed]) return
 
       // extract prop from atrule params
-      let prop = atrule.params.slice(1).slice(0,-1)
+      let prop = atrule.params.replace(/[( )]+/g, '');
 
       // bail if media prop already prepended
       if (STATE.mapped.has(prop)) return
@@ -90,15 +90,13 @@ module.exports = (opts) => {
 
     Declaration (node, {Declaration}) {
       // bail early
-      if (!node.value.includes('var(--') || node[processed]) return
-      
-      let props = node.value
-        .split(' ')
-        .filter(v => v.includes('var(--'))
-        .map(v => {
-          let beginning = v.slice(v.indexOf('var(--') + 4)
-          return beginning.slice(0, beginning.indexOf(')'))
-        })
+      if (node[processed]) return
+
+      let matches = node.value.match(/var\(\s*(--[\w\d-_]+)/g);
+
+      if (!matches) return;
+
+      let props = matches.map(v => v.replace('var(', '').trim())
 
       for (let prop of props) {
         // bail prepending this prop if it's already been done

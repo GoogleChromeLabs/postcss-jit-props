@@ -48,6 +48,21 @@ a {
   )
 })
 
+it('Can jit a single prop with spaces', async () => {
+  await run(
+`a {
+  color: var( --red );
+}`,
+`:root {
+  --red: #f00;
+}
+a {
+  color: var( --red );
+}`,
+  MockProps
+  )
+})
+
 it('Can jit a single prop that has fallbacks', async () => {
   await run(
 `a {
@@ -59,6 +74,21 @@ it('Can jit a single prop that has fallbacks', async () => {
 a {
   color: var(--red, hotpink);
 }`, 
+  MockProps
+  )
+})
+
+it('Can jit a single prop with spaces that has fallbacks', async () => {
+  await run(
+`a {
+  color: var(  --red, hotpink);
+}`,
+`:root {
+  --red: #f00;
+}
+a {
+  color: var(  --red, hotpink);
+}`,
   MockProps
   )
 })
@@ -79,19 +109,38 @@ a {
   )
 })
 
-it('Can jit multiple props', async () => {
+it('Can jit a single prop with spaces that has fallbacks and nested props', async () => {
   await run(
 `a {
-  color: var(--red);
-  border-color: var(--pink);
-}`, 
+  color: var( --red, var( --pink ), hotpink);
+}`,
 `:root {
   --red: #f00;
   --pink: #ffc0cb;
 }
 a {
+  color: var( --red, var( --pink ), hotpink);
+}`,
+  MockProps
+  )
+})
+
+it('Can jit multiple props', async () => {
+  await run(
+`a {
   color: var(--red);
   border-color: var(--pink);
+  padding-block-start: var( --size-1 );
+}`, 
+`:root {
+  --red: #f00;
+  --pink: #ffc0cb;
+  --size-1: 1rem;
+}
+a {
+  color: var(--red);
+  border-color: var(--pink);
+  padding-block-start: var( --size-1 );
 }`, 
   MockProps
   )
@@ -100,14 +149,14 @@ a {
 it('Can jit multiple props from shorthand', async () => {
   await run(
 `a {
-  padding-block: var(--size-1) var(--size-2);
+  padding-block: var(--size-1) var( --size-2  );
 }`, 
 `:root {
   --size-1: 1rem;
   --size-2: 2rem;
 }
 a {
-  padding-block: var(--size-1) var(--size-2);
+  padding-block: var(--size-1) var( --size-2  );
 }`, 
   MockProps
   )
@@ -116,7 +165,7 @@ a {
 it('Can jit props from inside functions', async () => {
   await run(
 `a {
-  color: hsl(var(--h) var(--s) var(--l));
+  color: hsl(var(--h) var(--s) var( --l ));
 }`, 
 `:root {
   --h: 200;
@@ -124,7 +173,7 @@ it('Can jit props from inside functions', async () => {
   --l: 50%;
 }
 a {
-  color: hsl(var(--h) var(--s) var(--l));
+  color: hsl(var(--h) var(--s) var( --l ));
 }`, 
   MockProps
   )
@@ -134,14 +183,14 @@ it('Only adds a prop one time to :root', async () => {
   await run(
 `a {
   color: var(--red);
-  border-color: var(--red);
+  border-color: var(--red );
 }`, 
 `:root {
   --red: #f00;
 }
 a {
   color: var(--red);
-  border-color: var(--red);
+  border-color: var(--red );
 }`, 
   MockProps
   )
@@ -179,18 +228,39 @@ it('Can jit @custom-media', async () => {
   )
 })
 
+it('Can jit @custom-media with spaces', async () => {
+  await run(
+`@media ( --dark ) {
+  a {
+    color: white;
+  }
+}`,
+`@custom-media --dark (prefers-color-scheme: dark);
+:root{}
+@media ( --dark ) {
+  a {
+    color: white;
+  }
+}`,
+  MockProps
+  )
+})
+
 it('Can jit props from JSON', async () => {
   await run(
 `a {
   color: var(--red);
-}`, 
+  border-color: var( --pink  );
+}`,
 `:root {
   --red: #f00;
+  --pink: #ffc0cb;
 }
 a {
   color: var(--red);
-}`, 
-  { "--red": "#f00" }
+  border-color: var( --pink  );
+}`,
+  MockProps
   )
 })
 
@@ -199,17 +269,20 @@ it('Can jit props from a CSS file', async () => {
 `@media (--dark) {
   a {
     color: var(--red);
+    border-color: var( --pink );
     animation: var(--fade-in);
   }
 }`, 
 `@custom-media --dark (prefers-color-scheme: dark);
 :root{
   --red: #f00;
+  --pink: #ffc0cb;
   --fade-in: fade-in .5s ease;
 }
 @media (--dark) {
   a {
     color: var(--red);
+    border-color: var( --pink );
     animation: var(--fade-in);
   }
 }
