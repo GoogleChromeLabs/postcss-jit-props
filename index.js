@@ -16,7 +16,7 @@ const fs      = require('fs');
 
 const processed = Symbol('processed')
 
-module.exports = (opts) => {
+module.exports = (UserProps, Config) => {
   const STATE = {
     target_rule: null,  // :root for props
     target_ss: null,    // stylesheet for keyframes/MQs
@@ -27,36 +27,36 @@ module.exports = (opts) => {
     postcssPlugin: 'postcss-jit-props',
 
     async Once (node, {Rule}) {
-      if (!Object.keys(opts).length) {
+      if (!Object.keys(UserProps).length) {
         return console.warn('postcss-jit-props: Variable source(s) not passed.')
       }
 
-      if (opts?.files?.length) {
-        await Promise.all(opts.files.map(async file => {
+      if (UserProps?.files?.length) {
+        await Promise.all(UserProps.files.map(async file => {
           let data = fs.readFileSync(file, 'utf8')
           let result = await postcss([(function(){})]).process(data, { from: undefined })
 
           result.root.walkDecls(decl => {
             if (!decl.prop.includes('--')) return
-            opts[decl.prop] = decl.value
+            UserProps[decl.prop] = decl.value
           })
 
           result.root.walkAtRules(atrule => {
             if (atrule.name === 'custom-media') {
               let media = atrule.params.slice(0, atrule.params.indexOf(' '))
-              opts[media] = `@custom-media ${atrule.params};`
+              UserProps[media] = `@custom-media ${atrule.params};`
             }
             else if (atrule.name === 'keyframes') {
               let keyframeName = `--${atrule.params}-@`
               let keyframes = atrule.source.input.css.slice(atrule.source.start.offset, atrule.source.end.offset+1)
-              opts[keyframeName] = keyframes
+              UserProps[keyframeName] = keyframes
             }
           })
         }))
       }
 
       STATE.mapped = new Set()
-      STATE.target_rule = new Rule({ selector: ':root' })
+      STATE.target_rule = new Rule({ selector: Config.custom_selector || ':root' })
       STATE.target_ss = node.root()
 
       node.root().prepend(STATE.target_rule)
@@ -73,7 +73,7 @@ module.exports = (opts) => {
       if (STATE.mapped.has(prop)) return
 
       // lookup prop value from pool
-      let value = opts[prop] || null
+      let value = UserProps[prop] || null
 
       // warn if media prop not resolved
       if (!value) {
@@ -103,7 +103,7 @@ module.exports = (opts) => {
         if (STATE.mapped.has(prop)) continue
 
         // lookup prop from options object
-        let value = opts[prop] || null
+        let value = UserProps[prop] || null
 
         // warn if props won't resolve from plugin
         if (!value) {
@@ -115,7 +115,7 @@ module.exports = (opts) => {
         STATE.target_rule.append(decl)
 
         // lookup keyframes for the prop and append if found
-        let keyframes = opts[`${prop}-@`]
+        let keyframes = UserProps[`${prop}-@`]
         keyframes && STATE.target_ss.append(keyframes)
 
         // track work to prevent duplicative processing
