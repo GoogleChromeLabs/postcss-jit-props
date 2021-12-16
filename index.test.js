@@ -27,8 +27,8 @@ const MockProps = {
   '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
 }
 
-async function run (input, output, opts = { }) {
-  let result = await postcss([plugin(opts)]).process(input, { from: undefined })
+async function run (input, output, props = { }, config = { }) {
+  let result = await postcss([plugin(props, config)]).process(input, { from: undefined })
   expect(result.css).toEqual(output)
   expect(result.warnings()).toHaveLength(0)
 }
@@ -296,4 +296,20 @@ it('Can fail without srcProps options gracefully', async () => {
   await postcss([plugin({})]).process(``, { from: undefined })
 
   expect(console.warn).toHaveBeenCalledWith('postcss-jit-props: Variable source(s) not passed.')
+})
+
+it('Can jit props to a custom selector', async () => {
+  await run(
+`a {
+  color: var(--red);
+}`, 
+`:global {
+  --red: #f00;
+}
+a {
+  color: var(--red);
+}`, 
+  MockProps,
+  {custom_selector: ':global'}
+  )
 })

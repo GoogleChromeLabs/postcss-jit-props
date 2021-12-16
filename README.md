@@ -106,3 +106,16 @@ module.exports = {
 or JSON ✨
 
 > Javascript and JSON must use the `-@` suffix on their custom property name in order for jit-props to find associated `@keyframes`
+
+Configure where the selector the props are pushed to. Some CSS Module environments, for example, don't want the props in `:root`, so we can configure the plugin to push them where it's acceptable for the environment, like `:global`: 
+
+```js
+module.exports = {
+  plugins: [
+    require('postcss-jit-props')(MyProps, {
+      custom_selector: ':global'
+    }),
+    require('autoprefixer'),
+  ]
+}
+```
