@@ -112,7 +112,8 @@ Configure where the selector the props are pushed to. Some CSS Module environmen
 ```js
 module.exports = {
   plugins: [
-    require('postcss-jit-props')(MyProps, {
+    require('postcss-jit-props')({
+      ...MyProps,
       custom_selector: ':global'
     }),
     require('autoprefixer'),

@@ -16,7 +16,7 @@ const fs      = require('fs');
 
 const processed = Symbol('processed')
 
-module.exports = (UserProps, Config) => {
+module.exports = (UserProps) => {
   const STATE = {
     target_rule: null,  // :root for props
     target_ss: null,    // stylesheet for keyframes/MQs
@@ -27,6 +27,8 @@ module.exports = (UserProps, Config) => {
     postcssPlugin: 'postcss-jit-props',
 
     async Once (node, {Rule}) {
+      let target_selector = ':root'
+
       if (!Object.keys(UserProps).length) {
         return console.warn('postcss-jit-props: Variable source(s) not passed.')
       }
@@ -55,8 +57,12 @@ module.exports = (UserProps, Config) => {
         }))
       }
 
+      if (UserProps?.custom_selector) {
+        target_selector = UserProps.custom_selector
+      }
+
       STATE.mapped = new Set()
-      STATE.target_rule = new Rule({ selector: Config.custom_selector || ':root' })
+      STATE.target_rule = new Rule({ selector: target_selector })
       STATE.target_ss = node.root()
 
       node.root().prepend(STATE.target_rule)

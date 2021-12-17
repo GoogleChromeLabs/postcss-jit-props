@@ -27,8 +27,8 @@ const MockProps = {
   '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
 }
 
-async function run (input, output, props = { }, config = { }) {
-  let result = await postcss([plugin(props, config)]).process(input, { from: undefined })
+async function run (input, output, options = { }) {
+  let result = await postcss([plugin(options)]).process(input, { from: undefined })
   expect(result.css).toEqual(output)
   expect(result.warnings()).toHaveLength(0)
 }
@@ -309,7 +309,9 @@ it('Can jit props to a custom selector', async () => {
 a {
   color: var(--red);
 }`, 
-  MockProps,
-  {custom_selector: ':global'}
+  {
+    ... MockProps,
+    custom_selector: ':global',
+  }
   )
 })
