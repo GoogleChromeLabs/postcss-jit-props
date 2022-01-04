@@ -8,7 +8,7 @@
 
 <br>
 
-`postcss-jit-props` watches for CSS variables and ensures a value entry exists in the stylesheet. [Try in browser](https://stackblitz.com/edit/postcss-jit-props-sandbox?file=postcss.config.js)
+`postcss-jit-props` watches for CSS variables and ensures a value entry exists in the stylesheet. [Try in browser](https://stackblitz.com/edit/jit-open-props?file=postcss.config.js)
 
 This lets you **provide a huge pool of properties** for development and design, and rather than try and purge unused variables, **only adds what was used**. 
 
