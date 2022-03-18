@@ -315,3 +315,17 @@ a {
   }
   )
 })
+
+it('Wont create a :root {} context unless props are found', async () => {
+  await run(
+`a {
+  color: red;
+}`, 
+`a {
+  color: red;
+}`, 
+  {
+    ... MockProps
+  }
+  )
+})

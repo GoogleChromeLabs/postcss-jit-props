@@ -64,8 +64,6 @@ module.exports = (UserProps) => {
       STATE.mapped = new Set()
       STATE.target_rule = new Rule({ selector: target_selector })
       STATE.target_ss = node.root()
-
-      node.root().prepend(STATE.target_rule)
     },
 
     AtRule (atrule) {
@@ -77,6 +75,10 @@ module.exports = (UserProps) => {
 
       // bail if media prop already prepended
       if (STATE.mapped.has(prop)) return
+
+      // create :root {} context just in time
+      if (STATE.mapped.size === 0)
+        STATE.target_ss.prepend(STATE.target_rule)
 
       // lookup prop value from pool
       let value = UserProps[prop] || null
@@ -98,9 +100,13 @@ module.exports = (UserProps) => {
       // bail early
       if (node[processed]) return
 
-      let matches = node.value.match(/var\(\s*(--[\w\d-_]+)/g);
+      let matches = node.value.match(/var\(\s*(--[\w\d-_]+)/g)
 
-      if (!matches) return;
+      if (!matches) return
+
+      // create :root {} context just in time
+      if (STATE.mapped.size === 0)
+        STATE.target_ss.prepend(STATE.target_rule)
 
       let props = matches.map(v => v.replace('var(', '').trim())
 
