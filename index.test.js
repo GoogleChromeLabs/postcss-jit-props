@@ -25,6 +25,8 @@ const MockProps = {
   '--fade-in': 'fade-in .5s ease',
   '--fade-in-@': '@keyframes fade-in {to { opacity: 1 }}',
   '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
+  '--text': 'white',
+  '@media(prefers-color-scheme:dark)--text': 'black',
 }
 
 async function run (input, output, options = { }) {
@@ -327,5 +329,25 @@ it('Wont create a :root {} context unless props are found', async () => {
   {
     ... MockProps
   }
+  )
+})
+
+it('Can jit a light and dark adaptive prop', async () => {
+  await run(
+`p {
+  color: var(--text);
+}`, 
+`:root {
+  --text: white;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: black;
+  }
+}
+p {
+  color: var(--text);
+}`, 
+  MockProps
   )
 })
