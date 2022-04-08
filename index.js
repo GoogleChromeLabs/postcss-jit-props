@@ -18,15 +18,19 @@ const processed = Symbol('processed')
 
 module.exports = (UserProps) => {
   const STATE = {
-    target_rule: null,  // :root for props
-    target_ss: null,    // stylesheet for keyframes/MQs
-    mapped: null        // track prepended props
+    mapped: null,            // track prepended props
+    mapped_dark: null,       // track dark mode prepended props
+
+    target_rule: null,       // :root for props
+    target_rule_dark: null,  // :root for dark props
+    target_ss: null,         // stylesheet for keyframes/MQs
+    target_media_dark: null, // dark media query props
   }
 
   return {
     postcssPlugin: 'postcss-jit-props',
 
-    async Once (node, {Rule}) {
+    async Once (node, {Rule, AtRule}) {
       let target_selector = ':root'
 
       if (!Object.keys(UserProps).length) {
@@ -62,7 +66,11 @@ module.exports = (UserProps) => {
       }
 
       STATE.mapped = new Set()
+      STATE.mapped_dark = new Set()
+
       STATE.target_rule = new Rule({ selector: target_selector })
+      STATE.target_rule_dark = new Rule({ selector: target_selector })
+      STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)' })
       STATE.target_ss = node.root()
     },
 
@@ -98,8 +106,8 @@ module.exports = (UserProps) => {
 
     Declaration (node, {Declaration}) {
       // bail early
-      if (node[processed]) return
-
+      if (node[processed] || !node.value) return
+      // console.log(node)
       let matches = node.value.match(/var\(\s*(--[\w\d-_]+)/g)
 
       if (!matches) return
@@ -125,14 +133,29 @@ module.exports = (UserProps) => {
         // create and append prop to :root
         let decl = new Declaration({ prop, value })
         STATE.target_rule.append(decl)
+        STATE.mapped.add(prop)
 
         // lookup keyframes for the prop and append if found
         let keyframes = UserProps[`${prop}-@`]
         keyframes && STATE.target_ss.append(keyframes)
 
+        // lookup dark adaptive prop and append if found
+        let adaptive = UserProps[`${prop}-@media:dark`]
+        if (adaptive && !STATE.mapped_dark.has(prop)) {
+          // create @media ... { :root {} } context just in time
+          if (STATE.mapped_dark.size === 0) {
+            STATE.target_media_dark.append(STATE.target_rule_dark)
+            STATE.target_ss.append(STATE.target_media_dark)
+          }
+
+          // append adaptive prop definition to dark media query
+          let darkdecl = new Declaration({ prop, value: adaptive })
+          STATE.target_rule_dark.append(darkdecl)
+          STATE.mapped_dark.add(prop)
+        }
+
         // track work to prevent duplicative processing
         node[processed] = true
-        STATE.mapped.add(prop)
       }
     }
   }

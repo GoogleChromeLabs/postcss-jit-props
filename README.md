@@ -86,6 +86,8 @@ module.exports = {
       '--fade-in': 'fade-in .5s ease',
       '--fade-in-@': '@keyframes fade-in {to { opacity: 1 }}',
       '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
+      '--text': 'white',
+      '--text-@media:dark': 'black',
     }),
     require('autoprefixer'),
   ]
