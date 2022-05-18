@@ -61,5 +61,8 @@
         "statements": 90
       }
     }
+  },
+  "dependencies": {
+    "tiny-glob": "^0.2.9"
   }
 }

@@ -13,6 +13,7 @@
 
 const postcss = require('postcss')
 const fs      = require('fs');
+const glob    = require('tiny-glob/sync');
 
 const processed = Symbol('processed')
 
@@ -38,7 +39,12 @@ module.exports = (UserProps) => {
       }
 
       if (UserProps?.files?.length) {
-        await Promise.all(UserProps.files.map(async file => {
+
+        const files = UserProps?.files
+          .map((file) => glob(file))
+          .reduce((flattenedFileList, files) => flattenedFileList.concat(files), [])
+
+        await Promise.all(files.map(async file => {
           let data = fs.readFileSync(file, 'utf8')
           let result = await postcss([(function(){})]).process(data, { from: undefined })
 

@@ -293,6 +293,33 @@ it('Can jit props from a CSS file', async () => {
   )
 })
 
+it('Can jit props from a CSS file via glob', async () => {
+  await run(
+`@media (--dark) {
+  a {
+    color: var(--red);
+    border-color: var( --pink );
+    animation: var(--fade-in);
+  }
+}`, 
+`@custom-media --dark (prefers-color-scheme: dark);
+:root{
+  --red: #f00;
+  --pink: #ffc0cb;
+  --fade-in: fade-in .5s ease;
+}
+@media (--dark) {
+  a {
+    color: var(--red);
+    border-color: var( --pink );
+    animation: var(--fade-in);
+  }
+}
+@keyframes fade-in {to { opacity: 1 }}`, 
+  { files: ['./*.test.css']}
+  )
+})
+
 it('Can fail without srcProps options gracefully', async () => {
   console.warn = jest.fn()
   await postcss([plugin({})]).process(``, { from: undefined })
