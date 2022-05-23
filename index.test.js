@@ -111,6 +111,22 @@ a {
   )
 })
 
+it('Can jit a single, undefined prop that has fallbacks and nested props', async () => {
+  await run(
+`a {
+  color: var(--orange, var(--pink), hotpink);
+}`, 
+`:root {
+  --pink: #ffc0cb;
+}
+a {
+  color: var(--orange, var(--pink), hotpink);
+}`, 
+  MockProps
+  )
+})
+
+
 it('Can jit a single prop with spaces that has fallbacks and nested props', async () => {
   await run(
 `a {

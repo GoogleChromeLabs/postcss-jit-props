@@ -127,7 +127,7 @@ module.exports = (UserProps) => {
 
         // warn if props won't resolve from plugin
         if (!value) {
-          return
+          continue
         }
 
         // create and append prop to :root
