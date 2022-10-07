@@ -10,29 +10,31 @@
 
 `postcss-jit-props` watches for CSS variables and ensures a value entry exists in the stylesheet. [Try in browser](https://stackblitz.com/edit/jit-open-props?file=postcss.config.js)
 
-This lets you **provide a huge pool of properties** for development and design, and rather than try and purge unused variables, **only adds what was used**. 
+This lets you **provide a huge pool of properties** for development and design, and rather than try and purge unused variables, **only adds what was used**.
 
 <br>
 
 ## Example
 
-CSS Before / During Development:  
+CSS Before / During Development:
+
 ```css
 .foo {
-  color: var(--brand-1);
-  padding: var(--size-1) var(--size-2);
-  margin-block-start: var(--size-2);
-  animation: var(--fade-in);
+	color: var(--brand-1);
+	padding: var(--size-1) var(--size-2);
+	margin-block-start: var(--size-2);
+	animation: var(--fade-in);
 }
 
 @media (--dark) {
-  .foo {
-    color: white;
-  }
+	.foo {
+		color: white;
+	}
 }
 ```
 
-CSS After / Result of Plugin:  
+CSS After / Result of Plugin:
+
 ```diff
 + @custom-media --dark (prefers-color-scheme: dark);
 
@@ -76,32 +78,33 @@ npm install --save-dev postcss-jit-props
 **Step 2:** Add the plugin to plugins in `postcss.config.js` and **pass it your props (CSS || JS || JSON)**.
 
 Pass JS objects:
+
 ```js
 module.exports = {
-  plugins: [
-    require('postcss-jit-props')({
-      '--brand-1': '#81A1C1',
-      '--size-1': '1rem',
-      '--size-2': '2rem',
-      '--fade-in': 'fade-in .5s ease',
-      '--fade-in-@': '@keyframes fade-in {to { opacity: 1 }}',
-      '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
-      '--text': 'white',
-      '--text-@media:dark': 'black',
-    }),
-    require('autoprefixer'),
-  ]
+	plugins: [
+		require('postcss-jit-props')({
+			'--brand-1': '#81A1C1',
+			'--size-1': '1rem',
+			'--size-2': '2rem',
+			'--fade-in': 'fade-in .5s ease',
+			'--fade-in-@': '@keyframes fade-in {to { opacity: 1 }}',
+			'--dark': '@custom-media --dark (prefers-color-scheme: dark);',
+			'--text': 'white',
+			'--text-@media:dark': 'black',
+		}),
+		require('autoprefixer'),
+	],
 }
 ```
 
-or pass CSS files 
+or pass CSS files
 
 ```js
 module.exports = {
-  plugins: [
-    require('postcss-jit-props')({files: ['./props.css']}),
-    require('autoprefixer'),
-  ]
+	plugins: [
+		require('postcss-jit-props')({ files: ['./props.css'] }),
+		require('autoprefixer'),
+	],
 }
 ```
 
@@ -109,16 +112,16 @@ or JSON ✨
 
 > Javascript and JSON must use the `-@` suffix on their custom property name in order for jit-props to find associated `@keyframes`
 
-Configure where the selector the props are pushed to. Some CSS Module environments, for example, don't want the props in `:root`, so we can configure the plugin to push them where it's acceptable for the environment, like `:global`: 
+Configure where the selector the props are pushed to. Some CSS Module environments, for example, don't want the props in `:root`, so we can configure the plugin to push them where it's acceptable for the environment, like `:global`:
 
 ```js
 module.exports = {
-  plugins: [
-    require('postcss-jit-props')({
-      ...MyProps,
-      custom_selector: ':global'
-    }),
-    require('autoprefixer'),
-  ]
+	plugins: [
+		require('postcss-jit-props')({
+			...MyProps,
+			custom_selector: ':global',
+		}),
+		require('autoprefixer'),
+	],
 }
 ```
