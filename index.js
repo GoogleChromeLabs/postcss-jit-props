@@ -22,9 +22,9 @@ module.exports = (UserProps) => {
 		mapped: null, // track prepended props
 		mapped_dark: null, // track dark mode prepended props
 
+		target_ss: null, // stylesheet for keyframes/MQs
 		target_rule: null, // :root for props
 		target_rule_dark: null, // :root for dark props
-		target_ss: null, // stylesheet for keyframes/MQs
 		target_media_dark: null, // dark media query props
 	}
 
@@ -54,20 +54,25 @@ module.exports = (UserProps) => {
 						})
 
 						result.root.walkDecls((decl) => {
-							if (!decl.prop.includes('--')) return
+							if (!decl.prop.includes('--')) {
+								return
+							}
+
 							UserProps[decl.prop] = decl.value
 						})
 
-						result.root.walkAtRules((atrule) => {
-							if (atrule.name === 'custom-media') {
-								let media = atrule.params.slice(0, atrule.params.indexOf(' '))
-								UserProps[media] = `@custom-media ${atrule.params};`
-							} else if (atrule.name === 'keyframes') {
-								let keyframeName = `--${atrule.params}-@`
-								let keyframes = atrule.source.input.css.slice(
-									atrule.source.start.offset,
-									atrule.source.end.offset + 1,
+						result.root.walkAtRules((atRule) => {
+							if (atRule.name === 'custom-media') {
+								let media = atRule.params.slice(0, atRule.params.indexOf(' '))
+
+								UserProps[media] = `@custom-media ${atRule.params};`
+							} else if (atRule.name === 'keyframes') {
+								let keyframeName = `--${atRule.params}-@`
+								let keyframes = atRule.source.input.css.slice(
+									atRule.source.start.offset,
+									atRule.source.end.offset + 1,
 								)
+
 								UserProps[keyframeName] = keyframes
 							}
 						})
@@ -82,27 +87,37 @@ module.exports = (UserProps) => {
 			STATE.mapped = new Set()
 			STATE.mapped_dark = new Set()
 
-			STATE.target_rule = new Rule({ selector: target_selector })
-			STATE.target_rule_dark = new Rule({ selector: target_selector })
+			STATE.target_ss = node.root()
+			STATE.target_rule = new Rule({
+				selector: target_selector,
+			})
+			STATE.target_rule_dark = new Rule({
+				selector: target_selector,
+			})
 			STATE.target_media_dark = new AtRule({
 				name: 'media',
 				params: '(prefers-color-scheme: dark)',
 			})
-			STATE.target_ss = node.root()
 		},
 
-		AtRule(atrule) {
+		AtRule(atRule) {
 			// bail early if possible
-			if (atrule.name !== 'media' || atrule[processed]) return
+			if (atRule.name !== 'media' || atRule[processed]) {
+				return
+			}
 
-			// extract prop from atrule params
-			let prop = atrule.params.replace(/[( )]+/g, '')
+			// extract prop from atRule params
+			let prop = atRule.params.replace(/[( )]+/g, '')
 
 			// bail if media prop already prepended
-			if (STATE.mapped.has(prop)) return
+			if (STATE.mapped.has(prop)) {
+				return
+			}
 
 			// create :root {} context just in time
-			if (STATE.mapped.size === 0) STATE.target_ss.prepend(STATE.target_rule)
+			if (STATE.mapped.size === 0) {
+				STATE.target_ss.prepend(STATE.target_rule)
+			}
 
 			// lookup prop value from pool
 			let value = UserProps[prop] || null
@@ -116,26 +131,34 @@ module.exports = (UserProps) => {
 			STATE.target_ss.prepend(value)
 
 			// track work to prevent duplication
-			atrule[processed] = true
+			atRule[processed] = true
 			STATE.mapped.add(prop)
 		},
 
 		Declaration(node, { Declaration }) {
 			// bail early
-			if (node[processed] || !node.value) return
+			if (node[processed] || !node.value) {
+				return
+			}
 			// console.log(node)
 			let matches = node.value.match(/var\(\s*(--[\w\d-_]+)/g)
 
-			if (!matches) return
+			if (!matches) {
+				return
+			}
 
 			// create :root {} context just in time
-			if (STATE.mapped.size === 0) STATE.target_ss.prepend(STATE.target_rule)
+			if (STATE.mapped.size === 0) {
+				STATE.target_ss.prepend(STATE.target_rule)
+			}
 
 			let props = matches.map((v) => v.replace('var(', '').trim())
 
 			for (let prop of props) {
 				// bail prepending this prop if it's already been done
-				if (STATE.mapped.has(prop)) continue
+				if (STATE.mapped.has(prop)) {
+					continue
+				}
 
 				// lookup prop from options object
 				let value = UserProps[prop] || null

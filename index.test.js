@@ -296,7 +296,7 @@ it('Can jit props from a CSS file', async () => {
 :root{
   --red: #f00;
   --pink: #ffc0cb;
-  --fade-in: fade-in .5s ease;
+  --fade-in: fade-in 0.5s ease;
 }
 @media (--dark) {
   a {
@@ -305,7 +305,11 @@ it('Can jit props from a CSS file', async () => {
     animation: var(--fade-in);
   }
 }
-@keyframes fade-in {to { opacity: 1 }}`,
+@keyframes fade-in {
+	to {
+		opacity: 1;
+	}
+}`,
 		{ files: ['./props.test.css'] },
 	)
 })
@@ -323,7 +327,7 @@ it('Can jit props from a CSS file via glob', async () => {
 :root{
   --red: #f00;
   --pink: #ffc0cb;
-  --fade-in: fade-in .5s ease;
+  --fade-in: fade-in 0.5s ease;
 }
 @media (--dark) {
   a {
@@ -332,7 +336,11 @@ it('Can jit props from a CSS file via glob', async () => {
     animation: var(--fade-in);
   }
 }
-@keyframes fade-in {to { opacity: 1 }}`,
+@keyframes fade-in {
+	to {
+		opacity: 1;
+	}
+}`,
 		{ files: ['./*.test.css'] },
 	)
 })
