@@ -30,16 +30,6 @@ const MockProps = {
 }
 
 const MockPropsWithCustomAdaptiveProp = {
-  '--red': '#f00',
-  '--pink': '#ffc0cb',
-  '--h': 200,
-  '--s': '50%',
-  '--l': '50%',
-  '--size-1': '1rem',
-  '--size-2': '2rem',
-  '--fade-in': 'fade-in .5s ease',
-  '--fade-in-@': '@keyframes fade-in {to { opacity: 1 }}',
-  '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
   '--text': 'white',
   '--text-dark': 'black',
 }
@@ -432,7 +422,7 @@ p {
   )
 })
 
-it('Can jit a light and dark with custom adaptive prop', async () => {
+it('Can jit a light and dark color with a custom adaptive prop parameter', async () => {
   await run(
 `p {
   color: var(--text);
