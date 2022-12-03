@@ -229,6 +229,28 @@ a {
   )
 })
 
+it('Can jit props into a layer', async () => {
+  await run(
+`a {
+  color: hsl(var(--h) var(--s) var( --l ));
+}`, 
+`@layer test {
+  :root {
+    --h: 200;
+    --s: 50%;
+    --l: 50%;
+  }
+}
+a {
+  color: hsl(var(--h) var(--s) var( --l ));
+}`, 
+  {
+    ... MockProps,
+    layer: 'test',
+  }
+  )
+})
+
 it('Can jit a keyframe animation', async () => {
   await run(
 `a {

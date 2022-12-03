@@ -32,6 +32,7 @@ module.exports = (UserProps) => {
     mapped: null,            // track prepended props
     mapped_dark: null,       // track dark mode prepended props
 
+    target_layer: null,       // layer for props
     target_rule: null,       // :root for props
     target_rule_dark: null,  // :root for dark props
     target_ss: null,         // stylesheet for keyframes/MQs
@@ -89,7 +90,14 @@ module.exports = (UserProps) => {
       STATE.target_rule = new Rule({ selector: target_selector })
       STATE.target_rule_dark = new Rule({ selector: target_selector })
       STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)' })
-      STATE.target_ss = node.root()
+
+      if (UserProps?.layer) {
+        STATE.target_layer = new AtRule({ name: 'layer', params: UserProps.layer })
+        node.root().prepend(STATE.target_layer)
+        STATE.target_ss = STATE.target_layer
+      }
+      else
+        STATE.target_ss = node.root()
     },
 
     AtRule (atrule) {

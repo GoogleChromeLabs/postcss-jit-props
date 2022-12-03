@@ -122,3 +122,17 @@ module.exports = {
   ]
 }
 ```
+
+Configure the `@layer` the props are pushed to. : 
+
+```js
+module.exports = {
+  plugins: [
+    require('postcss-jit-props')({
+      ...MyProps,
+      layer: 'design.system'
+    }),
+    require('autoprefixer'),
+  ]
+}
+```
