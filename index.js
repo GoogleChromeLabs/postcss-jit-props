@@ -17,6 +17,16 @@ const glob    = require('tiny-glob/sync');
 
 const processed = Symbol('processed')
 
+const getAdaptivePropSelector = (userProps) => {
+  return (prop) => {
+    if (!userProps || !userProps.adaptive_prop_selector) {
+      return `${prop}-@media:dark`
+    }
+
+    return `${prop}${userProps.adaptive_prop_selector}`
+  }
+}
+
 module.exports = (UserProps) => {
   const STATE = {
     mapped: null,            // track prepended props
@@ -28,6 +38,8 @@ module.exports = (UserProps) => {
     target_ss: null,         // stylesheet for keyframes/MQs
     target_media_dark: null, // dark media query props
   }
+
+  const adaptivePropSelector = getAdaptivePropSelector(UserProps)
 
   return {
     postcssPlugin: 'postcss-jit-props',
@@ -154,7 +166,7 @@ module.exports = (UserProps) => {
         keyframes && STATE.target_ss.append(keyframes)
 
         // lookup dark adaptive prop and append if found
-        let adaptive = UserProps[`${prop}-@media:dark`]
+        let adaptive = UserProps[adaptivePropSelector(prop)]
         if (adaptive && !STATE.mapped_dark.has(prop)) {
           // create @media ... { :root {} } context just in time
           if (STATE.mapped_dark.size === 0) {

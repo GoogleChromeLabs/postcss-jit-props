@@ -29,6 +29,11 @@ const MockProps = {
   '--text-@media:dark': 'black',
 }
 
+const MockPropsWithCustomAdaptiveProp = {
+  '--text': 'white',
+  '--text-dark': 'black',
+}
+
 async function run (input, output, options = { }) {
   let result = await postcss([plugin(options)]).process(input, { from: undefined })
   expect(result.css).toEqual(output)
@@ -414,5 +419,28 @@ p {
   }
 }`, 
   MockProps
+  )
+})
+
+it('Can jit a light and dark color with a custom adaptive prop parameter', async () => {
+  await run(
+`p {
+  color: var(--text);
+}`,
+`:root {
+  --text: white;
+}
+p {
+  color: var(--text);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: black;
+  }
+}`,
+  {
+  ...MockPropsWithCustomAdaptiveProp,
+  adaptive_prop_selector: '-dark'
+  }
   )
 })
