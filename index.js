@@ -59,7 +59,7 @@ module.exports = (UserProps) => {
 
         await Promise.all(files.map(async file => {
           let data = fs.readFileSync(file, 'utf8')
-          let result = await postcss([(function(){})]).process(data, { from: undefined })
+          let result = await postcss([(function(){})]).process(data, { from: file })
 
           result.root.walkDecls(decl => {
             if (!decl.prop.includes('--')) return
