@@ -173,11 +173,16 @@ module.exports = (UserProps) => {
             STATE.target_media_dark.append(STATE.target_rule_dark)
             STATE.target_ss.append(STATE.target_media_dark)
           }
-
-          // append adaptive prop definition to dark media query
-          let darkdecl = new Declaration({ prop, value: adaptive })
-          STATE.target_rule_dark.append(darkdecl)
-          STATE.mapped_dark.add(prop)
+          
+          if (adaptive.includes('@keyframes')) {
+            STATE.target_media_dark.append(adaptive)
+          }
+          else {
+            // append adaptive prop definition to dark media query
+            let darkdecl = new Declaration({ prop, value: adaptive })
+            STATE.target_rule_dark.append(darkdecl)
+            STATE.mapped_dark.add(prop)
+          }
         }
 
         // track work to prevent duplicative processing
