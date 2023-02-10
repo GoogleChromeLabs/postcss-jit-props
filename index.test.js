@@ -24,6 +24,9 @@ const MockProps = {
   '--size-2': '2rem',
   '--fade-in': 'fade-in .5s ease',
   '--fade-in-@': '@keyframes fade-in {to { opacity: 1 }}',
+  '--adaptive-fade': 'adaptive-fade .5s ease',
+  '--adaptive-fade-@': '@keyframes adaptive-fade {to { background: white }}',
+  '--adaptive-fade-@media:dark': '@keyframes adaptive-fade {to { background: black }}',
   '--dark': '@custom-media --dark (prefers-color-scheme: dark);',
   '--text': 'white',
   '--text-@media:dark': 'black',
@@ -251,6 +254,21 @@ it('Can jit a keyframe animation', async () => {
 }a {
   animation: var(--fade-in);
 }@keyframes fade-in {to { opacity: 1 }}`, 
+  MockProps
+  )
+})
+
+it('Can jit an adaptive keyframe animation', async () => {
+  await run(
+`a {
+  animation: var(--adaptive-fade);
+}`, 
+`:root {
+  --adaptive-fade: adaptive-fade .5s ease;
+}a {
+  animation: var(--adaptive-fade);
+}@keyframes adaptive-fade {to { background: white }}@media (prefers-color-scheme: dark) {:root {}@keyframes adaptive-fade {to { background: black }}
+}`, 
   MockProps
   )
 })
