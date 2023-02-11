@@ -466,3 +466,34 @@ p {
   }
   )
 })
+
+it('Supports parallel runners', async () => {
+  const pluginInstance = plugin({
+    '--red': '#f00',
+    '--pink': '#ffc0cb',
+  });
+
+  let [resultA, resultB, resultC, resultD] = await Promise.all([
+    postcss([pluginInstance]).process(`a { color: var(--red); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--pink); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--red); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--pink); }`, { from: undefined }),
+  ])
+
+  let resultE = await postcss([pluginInstance]).process(`a { color: green; }`, { from: undefined })
+
+  expect(resultA.css).toEqual(':root { --red: #f00; }\na { color: var(--red); }')
+  expect(resultA.warnings()).toHaveLength(0)
+
+  expect(resultB.css).toEqual(':root { --pink: #ffc0cb; }\na { color: var(--pink); }')
+  expect(resultB.warnings()).toHaveLength(0)
+
+  expect(resultC.css).toEqual(':root { --red: #f00; }\na { color: var(--red); }')
+  expect(resultC.warnings()).toHaveLength(0)
+
+  expect(resultD.css).toEqual(':root { --pink: #ffc0cb; }\na { color: var(--pink); }')
+  expect(resultD.warnings()).toHaveLength(0)
+
+  expect(resultE.css).toEqual('a { color: green; }')
+  expect(resultE.warnings()).toHaveLength(0)
+})

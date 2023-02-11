@@ -28,24 +28,23 @@ const getAdaptivePropSelector = (userProps) => {
 }
 
 module.exports = (UserProps) => {
-  const STATE = {
-    mapped: null,            // track prepended props
-    mapped_dark: null,       // track dark mode prepended props
-
-    target_layer: null,       // layer for props
-    target_rule: null,       // :root for props
-    target_rule_dark: null,  // :root for dark props
-    target_ss: null,         // stylesheet for keyframes/MQs
-    target_media_dark: null, // dark media query props
-  }
-
-  const adaptivePropSelector = getAdaptivePropSelector(UserProps)
-
   return {
     postcssPlugin: 'postcss-jit-props',
-
     prepare() {
       const UserPropsCopy = JSON.parse(JSON.stringify(UserProps));
+
+      const STATE = {
+        mapped: null,            // track prepended props
+        mapped_dark: null,       // track dark mode prepended props
+
+        target_layer: null,       // layer for props
+        target_rule: null,       // :root for props
+        target_rule_dark: null,  // :root for dark props
+        target_ss: null,         // stylesheet for keyframes/MQs
+        target_media_dark: null, // dark media query props
+      }
+
+      const adaptivePropSelector = getAdaptivePropSelector(UserProps)
 
       return {
         async Once(node, { result, Rule, AtRule }) {
