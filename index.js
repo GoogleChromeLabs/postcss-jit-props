@@ -13,7 +13,8 @@
 
 const postcss = require('postcss')
 const fs      = require('fs');
-const glob    = require('tiny-glob/sync');
+const glob = require('tiny-glob/sync');
+const crypto = require('crypto');
 
 const processed = Symbol('processed')
 
@@ -28,6 +29,8 @@ const getAdaptivePropSelector = (userProps) => {
 }
 
 module.exports = (UserProps) => {
+  const FilePropsCache = new Map();
+
   return {
     postcssPlugin: 'postcss-jit-props',
     prepare() {
@@ -69,22 +72,43 @@ module.exports = (UserProps) => {
               });
 
               let data = fs.readFileSync(file, 'utf8')
-              let dependencyResult = await postcss([(function () { })]).process(data, { from: file })
 
-              dependencyResult.root.walkDecls(decl => {
+              const hashSum = crypto.createHash('sha256')
+              hashSum.update(file)
+              hashSum.update(data)
+              const fileCacheKey = hashSum.digest('hex')
+
+              if (FilePropsCache.has(fileCacheKey)) {
+                const fileProps = FilePropsCache.get(fileCacheKey)
+                for (const [key, value] of fileProps) {
+                  UserPropsCopy[key] = value
+                }
+
+                return
+              }
+              
+              const fileProps = new Map()
+              FilePropsCache.set(fileCacheKey, fileProps)
+              
+              let dependencyResult = postcss.parse(data, { from: file })
+
+              dependencyResult.walkDecls(decl => {
                 if (!decl.variable) return
                 UserPropsCopy[decl.prop] = decl.value
+                fileProps.set(decl.prop, decl.value)
               })
 
-              dependencyResult.root.walkAtRules(atrule => {
+              dependencyResult.walkAtRules(atrule => {
                 if (atrule.name === 'custom-media') {
                   let media = atrule.params.slice(0, atrule.params.indexOf(' '))
                   UserPropsCopy[media] = `@custom-media ${atrule.params};`
+                  fileProps.set(media, `@custom-media ${atrule.params};`)
                 }
                 else if (atrule.name === 'keyframes') {
                   let keyframeName = `--${atrule.params}-@`
                   let keyframes = atrule.source.input.css.slice(atrule.source.start.offset, atrule.source.end.offset + 1)
                   UserPropsCopy[keyframeName] = keyframes
+                  fileProps.set(keyframeName, keyframes)
                 }
               })
             }))
