@@ -135,34 +135,36 @@ module.exports = (UserProps) => {
             STATE.target_ss = node.root()
         },
 
-        AtRule(atrule) {
-          // bail early if possible
-          if (atrule.name !== 'media' || atrule[processed]) return
+        AtRule: {
+          media: atrule => {
+            // bail early if possible
+            if (atrule[processed]) return
 
-          // extract prop from atrule params
-          let prop = atrule.params.replace(/[( )]+/g, '');
+            // extract prop from atrule params
+            let prop = atrule.params.replace(/[( )]+/g, '');
 
-          // bail if media prop already prepended
-          if (STATE.mapped.has(prop)) return
+            // bail if media prop already prepended
+            if (STATE.mapped.has(prop)) return
 
-          // create :root {} context just in time
-          if (STATE.mapped.size === 0)
-            STATE.target_ss.prepend(STATE.target_rule)
+            // create :root {} context just in time
+            if (STATE.mapped.size === 0)
+              STATE.target_ss.prepend(STATE.target_rule)
 
-          // lookup prop value from pool
-          let value = UserPropsCopy[prop] || null
+            // lookup prop value from pool
+            let value = UserPropsCopy[prop] || null
 
-          // warn if media prop not resolved
-          if (!value) {
-            return
+            // warn if media prop not resolved
+            if (!value) {
+              return
+            }
+
+            // prepend the custom media
+            STATE.target_ss.prepend(value)
+
+            // track work to prevent duplication
+            atrule[processed] = true
+            STATE.mapped.add(prop)
           }
-
-          // prepend the custom media
-          STATE.target_ss.prepend(value)
-
-          // track work to prevent duplication
-          atrule[processed] = true
-          STATE.mapped.add(prop)
         },
 
         Declaration(node, { Declaration }) {
