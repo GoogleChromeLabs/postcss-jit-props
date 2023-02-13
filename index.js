@@ -11,10 +11,10 @@
  * limitations under the License.
  */
 
-const postcss = require('postcss')
-const fs      = require('fs');
-const glob = require('tiny-glob/sync');
+const fs = require('fs');
 const crypto = require('crypto');
+
+const glob = require('tiny-glob/sync');
 
 const processed = Symbol('processed')
 
@@ -28,6 +28,7 @@ const getAdaptivePropSelector = (userProps) => {
   }
 }
 
+/** @type { import('postcss').PluginCreator<any> }*/
 module.exports = (UserProps) => {
   const FilePropsCache = new Map();
 
@@ -40,7 +41,7 @@ module.exports = (UserProps) => {
         mapped: null,            // track prepended props
         mapped_dark: null,       // track dark mode prepended props
 
-        target_layer: null,       // layer for props
+        target_layer: null,      // layer for props
         target_rule: null,       // :root for props
         target_rule_dark: null,  // :root for dark props
         target_ss: null,         // stylesheet for keyframes/MQs
@@ -50,7 +51,7 @@ module.exports = (UserProps) => {
       const adaptivePropSelector = getAdaptivePropSelector(UserProps)
 
       return {
-        async Once(node, { result, Rule, AtRule }) {
+        Once(node, { parse, result, Rule, AtRule }) {
           let target_selector = ':root'
 
           if (!Object.keys(UserPropsCopy).length) {
@@ -63,7 +64,7 @@ module.exports = (UserProps) => {
               .map((file) => glob(file))
               .reduce((flattenedFileList, files) => flattenedFileList.concat(files), [])
 
-            await Promise.all(files.map(async file => {
+            files.map(file => {
               result.messages.push({
                 type: 'dependency',
                 plugin: 'postcss-jit-props',
@@ -86,11 +87,11 @@ module.exports = (UserProps) => {
 
                 return
               }
-              
+
               const fileProps = new Map()
               FilePropsCache.set(fileCacheKey, fileProps)
-              
-              let dependencyResult = postcss.parse(data, { from: file })
+
+              let dependencyResult = parse(data, { from: file })
 
               dependencyResult.walkDecls(decl => {
                 if (!decl.variable) return
@@ -111,7 +112,7 @@ module.exports = (UserProps) => {
                   fileProps.set(keyframeName, keyframes)
                 }
               })
-            }))
+            })
           }
 
           if (UserPropsCopy?.custom_selector) {
