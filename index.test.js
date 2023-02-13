@@ -41,6 +41,10 @@ async function run (input, output, options = { }) {
   let result = await postcss([plugin(options)]).process(input, { from: undefined })
   expect(result.css).toEqual(output)
   expect(result.warnings()).toHaveLength(0)
+
+  if (options.files?.length) {
+    expect(result.messages.filter(x => x.type === 'dependency')).toHaveLength(options.files?.length)
+  }
 }
 
 it('Can jit a single prop', async () => {
@@ -461,4 +465,63 @@ p {
   adaptive_prop_selector: '-dark'
   }
   )
+})
+
+it('Supports parallel runners', async () => {
+  const pluginInstance = plugin({
+    '--red': '#f00',
+    '--pink': '#ffc0cb',
+  });
+
+  let [resultA, resultB, resultC, resultD] = await Promise.all([
+    postcss([pluginInstance]).process(`a { color: var(--red); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--pink); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--red); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--pink); }`, { from: undefined }),
+  ])
+
+  let resultE = await postcss([pluginInstance]).process(`a { color: green; }`, { from: undefined })
+
+  expect(resultA.css).toEqual(':root { --red: #f00; }\na { color: var(--red); }')
+  expect(resultA.warnings()).toHaveLength(0)
+
+  expect(resultB.css).toEqual(':root { --pink: #ffc0cb; }\na { color: var(--pink); }')
+  expect(resultB.warnings()).toHaveLength(0)
+
+  expect(resultC.css).toEqual(':root { --red: #f00; }\na { color: var(--red); }')
+  expect(resultC.warnings()).toHaveLength(0)
+
+  expect(resultD.css).toEqual(':root { --pink: #ffc0cb; }\na { color: var(--pink); }')
+  expect(resultD.warnings()).toHaveLength(0)
+
+  expect(resultE.css).toEqual('a { color: green; }')
+  expect(resultE.warnings()).toHaveLength(0)
+})
+
+it('Supports parallel runners when reading from a file', async () => {
+  const pluginInstance = plugin({ files: ['./props.test.css'] });
+
+  let [resultA, resultB, resultC, resultD] = await Promise.all([
+    postcss([pluginInstance]).process(`a { color: var(--red); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--pink); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--red); }`, { from: undefined }),
+    postcss([pluginInstance]).process(`a { color: var(--pink); }`, { from: undefined }),
+  ])
+
+  let resultE = await postcss([pluginInstance]).process(`a { color: green; }`, { from: undefined })
+
+  expect(resultA.css).toEqual(':root { --red: #f00; }\na { color: var(--red); }')
+  expect(resultA.warnings()).toHaveLength(0)
+
+  expect(resultB.css).toEqual(':root { --pink: #ffc0cb; }\na { color: var(--pink); }')
+  expect(resultB.warnings()).toHaveLength(0)
+
+  expect(resultC.css).toEqual(':root { --red: #f00; }\na { color: var(--red); }')
+  expect(resultC.warnings()).toHaveLength(0)
+
+  expect(resultD.css).toEqual(':root { --pink: #ffc0cb; }\na { color: var(--pink); }')
+  expect(resultD.warnings()).toHaveLength(0)
+
+  expect(resultE.css).toEqual('a { color: green; }')
+  expect(resultE.warnings()).toHaveLength(0)
 })

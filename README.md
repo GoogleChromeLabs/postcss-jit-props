@@ -2,9 +2,9 @@
 
 > Only ship used variables! A CSS custom property helper based on PostCSS
 
-[![Version](https://img.shields.io/npm/v/postcss-jit-props)](https://github.com/postcss/postcss-jit-props/blob/master/CHANGELOG.md)
+[![Version](https://img.shields.io/npm/v/postcss-jit-props)](https://www.npmjs.com/package/postcss-jit-props)
 [![postcss compatibility](https://img.shields.io/npm/dependency-version/postcss-jit-props/peer/postcss)](https://postcss.org/)
-[![Unit Tests](https://github.com/argyleink/postcss-jit-props/actions/workflows/node.js.yml/badge.svg)](https://github.com/argyleink/postcss-jit-props/actions/workflows/node.js.yml)
+[![Unit Tests](https://github.com/GoogleChromeLabs/postcss-jit-props/actions/workflows/node.js.yml/badge.svg)](https://github.com/GoogleChromeLabs/postcss-jit-props/actions/workflows/node.js.yml)
 
 <br>
 
