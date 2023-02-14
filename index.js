@@ -11,10 +11,10 @@
  * limitations under the License.
  */
 
-const postcss = require('postcss')
-const fs      = require('fs');
-const glob = require('tiny-glob/sync');
+const fs = require('fs');
 const crypto = require('crypto');
+
+const glob = require('tiny-glob/sync');
 
 const processed = Symbol('processed')
 
@@ -28,6 +28,7 @@ const getAdaptivePropSelector = (userProps) => {
   }
 }
 
+/** @type { import('postcss').PluginCreator<any> }*/
 module.exports = (UserProps) => {
   const FilePropsCache = new Map();
 
@@ -40,7 +41,7 @@ module.exports = (UserProps) => {
         mapped: null,            // track prepended props
         mapped_dark: null,       // track dark mode prepended props
 
-        target_layer: null,       // layer for props
+        target_layer: null,      // layer for props
         target_rule: null,       // :root for props
         target_rule_dark: null,  // :root for dark props
         target_ss: null,         // stylesheet for keyframes/MQs
@@ -50,7 +51,7 @@ module.exports = (UserProps) => {
       const adaptivePropSelector = getAdaptivePropSelector(UserProps)
 
       return {
-        async Once(node, { result, Rule, AtRule }) {
+        Once(node, { parse, result, Rule, AtRule }) {
           let target_selector = ':root'
 
           if (!Object.keys(UserPropsCopy).length) {
@@ -63,7 +64,7 @@ module.exports = (UserProps) => {
               .map((file) => glob(file))
               .reduce((flattenedFileList, files) => flattenedFileList.concat(files), [])
 
-            await Promise.all(files.map(async file => {
+            files.map(file => {
               result.messages.push({
                 type: 'dependency',
                 plugin: 'postcss-jit-props',
@@ -86,11 +87,11 @@ module.exports = (UserProps) => {
 
                 return
               }
-              
+
               const fileProps = new Map()
               FilePropsCache.set(fileCacheKey, fileProps)
-              
-              let dependencyResult = postcss.parse(data, { from: file })
+
+              let dependencyResult = parse(data, { from: file })
 
               dependencyResult.walkDecls(decl => {
                 if (!decl.variable) return
@@ -111,7 +112,7 @@ module.exports = (UserProps) => {
                   fileProps.set(keyframeName, keyframes)
                 }
               })
-            }))
+            })
           }
 
           if (UserPropsCopy?.custom_selector) {
@@ -134,34 +135,36 @@ module.exports = (UserProps) => {
             STATE.target_ss = node.root()
         },
 
-        AtRule(atrule) {
-          // bail early if possible
-          if (atrule.name !== 'media' || atrule[processed]) return
+        AtRule: {
+          media: atrule => {
+            // bail early if possible
+            if (atrule[processed]) return
 
-          // extract prop from atrule params
-          let prop = atrule.params.replace(/[( )]+/g, '');
+            // extract prop from atrule params
+            let prop = atrule.params.replace(/[( )]+/g, '');
 
-          // bail if media prop already prepended
-          if (STATE.mapped.has(prop)) return
+            // bail if media prop already prepended
+            if (STATE.mapped.has(prop)) return
 
-          // create :root {} context just in time
-          if (STATE.mapped.size === 0)
-            STATE.target_ss.prepend(STATE.target_rule)
+            // create :root {} context just in time
+            if (STATE.mapped.size === 0)
+              STATE.target_ss.prepend(STATE.target_rule)
 
-          // lookup prop value from pool
-          let value = UserPropsCopy[prop] || null
+            // lookup prop value from pool
+            let value = UserPropsCopy[prop] || null
 
-          // warn if media prop not resolved
-          if (!value) {
-            return
+            // warn if media prop not resolved
+            if (!value) {
+              return
+            }
+
+            // prepend the custom media
+            STATE.target_ss.prepend(value)
+
+            // track work to prevent duplication
+            atrule[processed] = true
+            STATE.mapped.add(prop)
           }
-
-          // prepend the custom media
-          STATE.target_ss.prepend(value)
-
-          // track work to prevent duplication
-          atrule[processed] = true
-          STATE.mapped.add(prop)
         },
 
         Declaration(node, { Declaration }) {
