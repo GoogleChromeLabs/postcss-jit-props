@@ -38,13 +38,16 @@ const MockPropsWithCustomAdaptiveProp = {
 }
 
 async function run (input, output, options = { }) {
-  let result = await postcss([plugin(options)]).process(input, { from: undefined })
-  expect(result.css).toEqual(output)
+  let result = await postcss([plugin(options)]).process(input, { from: 'input.css', to: 'output.css', map: { inline: false } })
+  expect(result.css.replace('\n/*# sourceMappingURL=output.css.map */', '')).toEqual(output)
   expect(result.warnings()).toHaveLength(0)
 
   if (options.files?.length) {
     expect(result.messages.filter(x => x.type === 'dependency')).toHaveLength(options.files?.length)
   }
+
+  const map = result.map.toJSON();
+  expect(map.sources).toEqual(['input.css']);
 }
 
 it('Can jit a single prop', async () => {

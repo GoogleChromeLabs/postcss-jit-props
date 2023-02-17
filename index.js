@@ -122,12 +122,12 @@ module.exports = (UserProps) => {
           STATE.mapped = new Set()
           STATE.mapped_dark = new Set()
 
-          STATE.target_rule = new Rule({ selector: target_selector })
-          STATE.target_rule_dark = new Rule({ selector: target_selector })
-          STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)' })
+          STATE.target_rule = new Rule({ selector: target_selector, source: node.first.source })
+          STATE.target_rule_dark = new Rule({ selector: target_selector, source: node.first.source })
+          STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)', source: node.first.source })
 
           if (UserPropsCopy?.layer) {
-            STATE.target_layer = new AtRule({ name: 'layer', params: UserPropsCopy.layer })
+            STATE.target_layer = new AtRule({ name: 'layer', params: UserPropsCopy.layer, source: node.first.source })
             node.root().prepend(STATE.target_layer)
             STATE.target_ss = STATE.target_layer
           }
@@ -136,7 +136,7 @@ module.exports = (UserProps) => {
         },
 
         AtRule: {
-          media: atrule => {
+          media: (atrule, { parse }) => {
             // bail early if possible
             if (atrule[processed]) return
 
@@ -159,7 +159,9 @@ module.exports = (UserProps) => {
             }
 
             // prepend the custom media
-            STATE.target_ss.prepend(value)
+            const customMedia = parse(value).first;
+            customMedia.source = atrule.source
+            STATE.target_ss.prepend(customMedia)
 
             // track work to prevent duplication
             atrule[processed] = true
@@ -167,7 +169,7 @@ module.exports = (UserProps) => {
           }
         },
 
-        Declaration(node, { Declaration }) {
+        Declaration(node, { Declaration, parse }) {
           // bail early
           if (node[processed] || !node.value) return
           // console.log(node)
@@ -194,13 +196,18 @@ module.exports = (UserProps) => {
             }
 
             // create and append prop to :root
-            let decl = new Declaration({ prop, value })
+            let decl = new Declaration({ prop, value, source: node.source })
             STATE.target_rule.append(decl)
             STATE.mapped.add(prop)
 
             // lookup keyframes for the prop and append if found
             let keyframes = UserPropsCopy[`${prop}-@`]
-            keyframes && STATE.target_ss.append(keyframes)
+            if (keyframes) {
+              const keyframesNode = parse(keyframes).first;
+              keyframesNode.source = node.source
+              keyframesNode.walk((x) => x.source = node.source)
+              STATE.target_ss.append(keyframesNode)
+            }
 
             // lookup dark adaptive prop and append if found
             let adaptive = UserPropsCopy[adaptivePropSelector(prop)]
@@ -212,11 +219,14 @@ module.exports = (UserProps) => {
               }
 
               if (adaptive.includes('@keyframes')) {
-                STATE.target_media_dark.append(adaptive)
+                const adaptiveNode = parse(adaptive).first;
+                adaptiveNode.source = node.source
+                adaptiveNode.walk((x) => x.source = node.source)
+                STATE.target_media_dark.append(adaptiveNode)
               }
               else {
                 // append adaptive prop definition to dark media query
-                let darkdecl = new Declaration({ prop, value: adaptive })
+                let darkdecl = new Declaration({ prop, value: adaptive, source: node.source })
                 STATE.target_rule_dark.append(darkdecl)
                 STATE.mapped_dark.add(prop)
               }
