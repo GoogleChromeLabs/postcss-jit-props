@@ -16,7 +16,7 @@ const crypto = require('crypto');
 
 const glob = require('tiny-glob/sync');
 
-const processed = Symbol('processed')
+const processed = new WeakSet();
 
 const getAdaptivePropSelector = (userProps) => {
   return (prop) => {
@@ -138,7 +138,7 @@ module.exports = (UserProps) => {
         AtRule: {
           media: atrule => {
             // bail early if possible
-            if (atrule[processed]) return
+            if (processed.has(atrule)) return
 
             // extract prop from atrule params
             let prop = atrule.params.replace(/[( )]+/g, '');
@@ -162,14 +162,14 @@ module.exports = (UserProps) => {
             STATE.target_ss.prepend(value)
 
             // track work to prevent duplication
-            atrule[processed] = true
+            processed.add(atrule)
             STATE.mapped.add(prop)
           }
         },
 
         Declaration(node, { Declaration }) {
           // bail early
-          if (node[processed] || !node.value) return
+          if (processed.has(node) || !node.value) return
           // console.log(node)
           let matches = node.value.match(/var\(\s*(--[\w\d-_]+)/g)
 
@@ -223,7 +223,7 @@ module.exports = (UserProps) => {
             }
 
             // track work to prevent duplicative processing
-            node[processed] = true
+            processed.add(node)
           }
         }
       }
