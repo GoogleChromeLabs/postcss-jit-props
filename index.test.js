@@ -46,8 +46,8 @@ async function run (input, output, options = { }) {
     expect(result.messages.filter(x => x.type === 'dependency')).toHaveLength(options.files?.length)
   }
 
-  const map = result.map.toJSON();
-  expect(map.sources).toEqual(['input.css']);
+  const map = result.map.toJSON()
+  expect(map.sources).toEqual(['input.css'])
 }
 
 it('Can jit a single prop', async () => {

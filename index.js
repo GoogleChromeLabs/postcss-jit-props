@@ -159,7 +159,7 @@ module.exports = (UserProps) => {
             }
 
             // prepend the custom media
-            const customMedia = parse(value).first;
+            const customMedia = parse(value).first
             customMedia.source = atrule.source
             STATE.target_ss.prepend(customMedia)
 
@@ -203,7 +203,7 @@ module.exports = (UserProps) => {
             // lookup keyframes for the prop and append if found
             let keyframes = UserPropsCopy[`${prop}-@`]
             if (keyframes) {
-              const keyframesNode = parse(keyframes).first;
+              const keyframesNode = parse(keyframes).first
               keyframesNode.source = node.source
               keyframesNode.walk((x) => x.source = node.source)
               STATE.target_ss.append(keyframesNode)
@@ -219,7 +219,7 @@ module.exports = (UserProps) => {
               }
 
               if (adaptive.includes('@keyframes')) {
-                const adaptiveNode = parse(adaptive).first;
+                const adaptiveNode = parse(adaptive).first
                 adaptiveNode.source = node.source
                 adaptiveNode.walk((x) => x.source = node.source)
                 STATE.target_media_dark.append(adaptiveNode)
