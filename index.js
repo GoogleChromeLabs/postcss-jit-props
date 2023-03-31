@@ -18,24 +18,26 @@ const glob = require('tiny-glob/sync');
 
 const processed = new WeakSet();
 
-const getAdaptivePropSelector = (userProps) => {
+const getAdaptivePropSelector = (selector) => {
   return (prop) => {
-    if (!userProps || !userProps.adaptive_prop_selector) {
+    if (!selector) {
       return `${prop}-@media:dark`
     }
 
-    return `${prop}${userProps.adaptive_prop_selector}`
+    return `${prop}${selector}`
   }
 }
 
 /** @type { import('postcss').PluginCreator<any> }*/
-module.exports = (UserProps) => {
+module.exports = (options) => {
+  const { files, adaptive_prop_selector, custom_selector, layer, ...props } = options
+
   const FilePropsCache = new Map();
 
   return {
     postcssPlugin: 'postcss-jit-props',
     prepare() {
-      const UserPropsCopy = JSON.parse(JSON.stringify(UserProps));
+      const UserProps = { ...props }
 
       const STATE = {
         mapped: null,            // track prepended props
@@ -48,23 +50,23 @@ module.exports = (UserProps) => {
         target_media_dark: null, // dark media query props
       }
 
-      const adaptivePropSelector = getAdaptivePropSelector(UserProps)
+      const adaptivePropSelector = getAdaptivePropSelector(adaptive_prop_selector)
 
       return {
         Once(node, { parse, result, Rule, AtRule }) {
-          let target_selector = ':root'
+          let target_selector = custom_selector || ':root'
 
-          if (!Object.keys(UserPropsCopy).length) {
+          if (!files && !Object.keys(props).length) {
             return console.warn('postcss-jit-props: Variable source(s) not passed.')
           }
 
-          if (UserPropsCopy?.files?.length) {
+          if (files?.length) {
 
-            const files = UserPropsCopy?.files
+            const globs = files
               .map((file) => glob(file))
               .reduce((flattenedFileList, files) => flattenedFileList.concat(files), [])
 
-            files.map(file => {
+            globs.map(file => {
               result.messages.push({
                 type: 'dependency',
                 plugin: 'postcss-jit-props',
@@ -82,7 +84,7 @@ module.exports = (UserProps) => {
               if (FilePropsCache.has(fileCacheKey)) {
                 const fileProps = FilePropsCache.get(fileCacheKey)
                 for (const [key, value] of fileProps) {
-                  UserPropsCopy[key] = value
+                  UserProps[key] = value
                 }
 
                 return
@@ -95,28 +97,24 @@ module.exports = (UserProps) => {
 
               dependencyResult.walkDecls(decl => {
                 if (!decl.variable) return
-                UserPropsCopy[decl.prop] = decl.value
+                UserProps[decl.prop] = decl.value
                 fileProps.set(decl.prop, decl.value)
               })
 
               dependencyResult.walkAtRules(atrule => {
                 if (atrule.name === 'custom-media') {
                   let media = atrule.params.slice(0, atrule.params.indexOf(' '))
-                  UserPropsCopy[media] = `@custom-media ${atrule.params};`
+                  UserProps[media] = `@custom-media ${atrule.params};`
                   fileProps.set(media, `@custom-media ${atrule.params};`)
                 }
                 else if (atrule.name === 'keyframes') {
                   let keyframeName = `--${atrule.params}-@`
                   let keyframes = atrule.source.input.css.slice(atrule.source.start.offset, atrule.source.end.offset + 1)
-                  UserPropsCopy[keyframeName] = keyframes
+                  UserProps[keyframeName] = keyframes
                   fileProps.set(keyframeName, keyframes)
                 }
               })
             })
-          }
-
-          if (UserPropsCopy?.custom_selector) {
-            target_selector = UserPropsCopy.custom_selector
           }
 
           STATE.mapped = new Set()
@@ -126,8 +124,8 @@ module.exports = (UserProps) => {
           STATE.target_rule_dark = new Rule({ selector: target_selector, source: node.first.source })
           STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)', source: node.first.source })
 
-          if (UserPropsCopy?.layer) {
-            STATE.target_layer = new AtRule({ name: 'layer', params: UserPropsCopy.layer, source: node.first.source })
+          if (layer) {
+            STATE.target_layer = new AtRule({ name: 'layer', params: layer, source: node.first.source })
             node.root().prepend(STATE.target_layer)
             STATE.target_ss = STATE.target_layer
           }
@@ -151,7 +149,7 @@ module.exports = (UserProps) => {
               STATE.target_ss.prepend(STATE.target_rule)
 
             // lookup prop value from pool
-            let value = UserPropsCopy[prop] || null
+            let value = UserProps[prop] || null
 
             // warn if media prop not resolved
             if (!value) {
@@ -188,7 +186,7 @@ module.exports = (UserProps) => {
             if (STATE.mapped.has(prop)) continue
 
             // lookup prop from options object
-            let value = UserPropsCopy[prop] || null
+            let value = UserProps[prop] || null
 
             // warn if props won't resolve from plugin
             if (!value) {
@@ -201,7 +199,7 @@ module.exports = (UserProps) => {
             STATE.mapped.add(prop)
 
             // lookup keyframes for the prop and append if found
-            let keyframes = UserPropsCopy[`${prop}-@`]
+            let keyframes = UserProps[`${prop}-@`]
             if (keyframes) {
               const keyframesNode = parse(keyframes).first
               keyframesNode.source = node.source
@@ -210,7 +208,7 @@ module.exports = (UserProps) => {
             }
 
             // lookup dark adaptive prop and append if found
-            let adaptive = UserPropsCopy[adaptivePropSelector(prop)]
+            let adaptive = UserProps[adaptivePropSelector(prop)]
             if (adaptive && !STATE.mapped_dark.has(prop)) {
               // create @media ... { :root {} } context just in time
               if (STATE.mapped_dark.size === 0) {
