@@ -54,13 +54,13 @@ it('Can jit a single prop', async () => {
   await run(
 `a {
   color: var(--red);
-}`, 
+}`,
 `:root {
   --red: #f00;
 }
 a {
   color: var(--red);
-}`, 
+}`,
   MockProps
   )
 })
@@ -84,13 +84,13 @@ it('Can jit a single prop that has fallbacks', async () => {
   await run(
 `a {
   color: var(--red, hotpink);
-}`, 
+}`,
 `:root {
   --red: #f00;
 }
 a {
   color: var(--red, hotpink);
-}`, 
+}`,
   MockProps
   )
 })
@@ -114,14 +114,14 @@ it('Can jit a single prop that has fallbacks and nested props', async () => {
   await run(
 `a {
   color: var(--red, var(--pink), hotpink);
-}`, 
+}`,
 `:root {
   --red: #f00;
   --pink: #ffc0cb;
 }
 a {
   color: var(--red, var(--pink), hotpink);
-}`, 
+}`,
   MockProps
   )
 })
@@ -130,13 +130,13 @@ it('Can jit a single, undefined prop that has fallbacks and nested props', async
   await run(
 `a {
   color: var(--orange, var(--pink), hotpink);
-}`, 
+}`,
 `:root {
   --pink: #ffc0cb;
 }
 a {
   color: var(--orange, var(--pink), hotpink);
-}`, 
+}`,
   MockProps
   )
 })
@@ -164,7 +164,7 @@ it('Can jit multiple props', async () => {
   color: var(--red);
   border-color: var(--pink);
   padding-block-start: var( --size-1 );
-}`, 
+}`,
 `:root {
   --red: #f00;
   --pink: #ffc0cb;
@@ -174,7 +174,7 @@ a {
   color: var(--red);
   border-color: var(--pink);
   padding-block-start: var( --size-1 );
-}`, 
+}`,
   MockProps
   )
 })
@@ -183,14 +183,14 @@ it('Can jit multiple props from shorthand', async () => {
   await run(
 `a {
   padding-block: var(--size-1) var( --size-2  );
-}`, 
+}`,
 `:root {
   --size-1: 1rem;
   --size-2: 2rem;
 }
 a {
   padding-block: var(--size-1) var( --size-2  );
-}`, 
+}`,
   MockProps
   )
 })
@@ -199,7 +199,7 @@ it('Can jit props from inside functions', async () => {
   await run(
 `a {
   color: hsl(var(--h) var(--s) var( --l ));
-}`, 
+}`,
 `:root {
   --h: 200;
   --s: 50%;
@@ -207,7 +207,7 @@ it('Can jit props from inside functions', async () => {
 }
 a {
   color: hsl(var(--h) var(--s) var( --l ));
-}`, 
+}`,
   MockProps
   )
 })
@@ -217,14 +217,14 @@ it('Only adds a prop one time to :root', async () => {
 `a {
   color: var(--red);
   border-color: var(--red );
-}`, 
+}`,
 `:root {
   --red: #f00;
 }
 a {
   color: var(--red);
   border-color: var(--red );
-}`, 
+}`,
   MockProps
   )
 })
@@ -233,7 +233,7 @@ it('Can jit props into a layer', async () => {
   await run(
 `a {
   color: hsl(var(--h) var(--s) var( --l ));
-}`, 
+}`,
 `@layer test {
   :root {
     --h: 200;
@@ -243,7 +243,7 @@ it('Can jit props into a layer', async () => {
 }
 a {
   color: hsl(var(--h) var(--s) var( --l ));
-}`, 
+}`,
   {
     ... MockProps,
     layer: 'test',
@@ -255,12 +255,12 @@ it('Can jit a keyframe animation', async () => {
   await run(
 `a {
   animation: var(--fade-in);
-}`, 
+}`,
 `:root {
   --fade-in: fade-in .5s ease;
 }a {
   animation: var(--fade-in);
-}@keyframes fade-in {to { opacity: 1 }}`, 
+}@keyframes fade-in {to { opacity: 1 }}`,
   MockProps
   )
 })
@@ -269,13 +269,13 @@ it('Can jit an adaptive keyframe animation', async () => {
   await run(
 `a {
   animation: var(--adaptive-fade);
-}`, 
+}`,
 `:root {
   --adaptive-fade: adaptive-fade .5s ease;
 }a {
   animation: var(--adaptive-fade);
 }@keyframes adaptive-fade {to { background: white }}@media (prefers-color-scheme: dark) {:root {}@keyframes adaptive-fade {to { background: black }}
-}`, 
+}`,
   MockProps
   )
 })
@@ -286,14 +286,14 @@ it('Can jit @custom-media', async () => {
   a {
     color: white;
   }
-}`, 
+}`,
 `@custom-media --dark (prefers-color-scheme: dark);
 :root{}
 @media (--dark) {
   a {
     color: white;
   }
-}`, 
+}`,
   MockProps
   )
 })
@@ -342,7 +342,7 @@ it('Can jit props from a CSS file', async () => {
     border-color: var( --pink );
     animation: var(--fade-in);
   }
-}`, 
+}`,
 `@custom-media --dark (prefers-color-scheme: dark);
 :root{
   --red: #f00;
@@ -356,7 +356,7 @@ it('Can jit props from a CSS file', async () => {
     animation: var(--fade-in);
   }
 }
-@keyframes fade-in {to { opacity: 1 }}`, 
+@keyframes fade-in {to { opacity: 1 }}`,
   { files: ['./props.test.css']}
   )
 })
@@ -369,7 +369,7 @@ it('Can jit props from a CSS file via glob', async () => {
     border-color: var( --pink );
     animation: var(--fade-in);
   }
-}`, 
+}`,
 `@custom-media --dark (prefers-color-scheme: dark);
 :root{
   --red: #f00;
@@ -383,7 +383,7 @@ it('Can jit props from a CSS file via glob', async () => {
     animation: var(--fade-in);
   }
 }
-@keyframes fade-in {to { opacity: 1 }}`, 
+@keyframes fade-in {to { opacity: 1 }}`,
   { files: ['./*.test.css']}
   )
 })
@@ -399,13 +399,13 @@ it('Can jit props to a custom selector', async () => {
   await run(
 `a {
   color: var(--red);
-}`, 
+}`,
 `:global {
   --red: #f00;
 }
 a {
   color: var(--red);
-}`, 
+}`,
   {
     ... MockProps,
     custom_selector: ':global',
@@ -417,10 +417,10 @@ it('Wont create a :root {} context unless props are found', async () => {
   await run(
 `a {
   color: red;
-}`, 
+}`,
 `a {
   color: red;
-}`, 
+}`,
   {
     ... MockProps
   }
@@ -431,7 +431,7 @@ it('Can jit a light and dark adaptive prop', async () => {
   await run(
 `p {
   color: var(--text);
-}`, 
+}`,
 `:root {
   --text: white;
 }
@@ -442,7 +442,7 @@ p {
   :root {
     --text: black;
   }
-}`, 
+}`,
   MockProps
   )
 })
@@ -527,4 +527,25 @@ it('Supports parallel runners when reading from a file', async () => {
 
   expect(resultE.css).toEqual('a { color: green; }')
   expect(resultE.warnings()).toHaveLength(0)
+})
+
+it('Can merge :root rules', async () => {
+  await run(
+`:root {
+  --red: red;
+}
+
+p {
+  color: var(--pink);
+}`,
+`:root {
+  --pink: #ffc0cb;
+  --red: red;
+}
+
+p {
+  color: var(--pink);
+}`,
+  MockProps
+  )
 })
