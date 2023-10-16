@@ -30,7 +30,13 @@ const getAdaptivePropSelector = (selector) => {
 
 /** @type { import('postcss').PluginCreator<any> }*/
 module.exports = (options) => {
-  const { files, adaptive_prop_selector, custom_selector, layer, ...props } = options
+  const { 
+    files, 
+    adaptive_prop_selector, 
+    custom_selector, 
+    custom_selector_dark, 
+    layer, ...props
+  } = options
 
   const FilePropsCache = new Map();
 
@@ -55,6 +61,7 @@ module.exports = (options) => {
       return {
         Once(node, { parse, result, Rule, AtRule }) {
           let target_selector = custom_selector || ':root'
+          let target_selector_dark = custom_selector_dark || ':root'
 
           if (!files && !Object.keys(props).length) {
             return console.warn('postcss-jit-props: Variable source(s) not passed.')
@@ -121,7 +128,7 @@ module.exports = (options) => {
           STATE.mapped_dark = new Set()
 
           STATE.target_rule = new Rule({ selector: target_selector, source: node.first.source })
-          STATE.target_rule_dark = new Rule({ selector: target_selector, source: node.first.source })
+          STATE.target_rule_dark = new Rule({ selector: target_selector_dark, source: node.first.source })
           STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)', source: node.first.source })
 
           if (layer) {
