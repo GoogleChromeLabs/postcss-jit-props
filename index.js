@@ -61,7 +61,7 @@ module.exports = (options) => {
       return {
         Once(node, { parse, result, Rule, AtRule }) {
           let target_selector = custom_selector || ':root'
-          let target_selector_dark = custom_selector_dark || ':root'
+          let target_selector_dark = custom_selector_dark || custom_selector || ':root'
 
           if (!files && !Object.keys(props).length) {
             return console.warn('postcss-jit-props: Variable source(s) not passed.')
