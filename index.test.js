@@ -413,6 +413,53 @@ a {
   )
 })
 
+it('Can jit light and dark props to a custom selector', async () => {
+  await run(
+`a {
+  color: var(--text);
+}`, 
+`:global {
+  --text: white;
+}
+a {
+  color: var(--text);
+}
+@media (prefers-color-scheme: dark) {
+  :global {
+    --text: black;
+  }
+}`, 
+  {
+    ... MockProps,
+    custom_selector: ':global',
+  }
+  )
+})
+
+it('Can jit light & dark props to a custom selector for use with a client side switch', async () => {
+  await run(
+`a {
+  color: var(--text);
+}`, 
+`.light {
+  --text: white;
+}
+a {
+  color: var(--text);
+}
+@media (prefers-color-scheme: dark) {
+  .dark {
+    --text: black;
+  }
+}`, 
+  {
+    ... MockProps,
+    custom_selector: '.light',
+    custom_selector_dark: '.dark',
+  }
+  )
+})
+
 it('Wont create a :root {} context unless props are found', async () => {
   await run(
 `a {
