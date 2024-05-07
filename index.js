@@ -127,12 +127,12 @@ module.exports = (options) => {
           STATE.mapped = new Set()
           STATE.mapped_dark = new Set()
 
-          STATE.target_rule = new Rule({ selector: target_selector, source: node.first.source })
-          STATE.target_rule_dark = new Rule({ selector: target_selector_dark, source: node.first.source })
-          STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)', source: node.first.source })
+          STATE.target_rule = new Rule({ selector: target_selector, source: node.first?.source })
+          STATE.target_rule_dark = new Rule({ selector: target_selector_dark, source: node.first?.source })
+          STATE.target_media_dark = new AtRule({ name: 'media', params: '(prefers-color-scheme: dark)', source: node.first?.source })
 
           if (layer) {
-            STATE.target_layer = new AtRule({ name: 'layer', params: layer, source: node.first.source })
+            STATE.target_layer = new AtRule({ name: 'layer', params: layer, source: node.first?.source })
             node.root().prepend(STATE.target_layer)
             STATE.target_ss = STATE.target_layer
           }
