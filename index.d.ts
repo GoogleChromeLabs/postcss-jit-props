@@ -7,7 +7,7 @@ export interface Options {
   layer?: string;
 
   /**
-   * Where search for css props, globbing allowed.
+   * Where to search for css props, globbing allowed.
    */
   files?: string[];
 
