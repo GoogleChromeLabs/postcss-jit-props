@@ -9,6 +9,7 @@
     "css-vars",
     "css-custom-properties"
   ],
+  "types": "index.d.ts",
   "scripts": {
     "test": "jest --coverage && eslint .",
     "dev": "jest --coverage --watch",
