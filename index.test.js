@@ -575,3 +575,18 @@ it('Supports parallel runners when reading from a file', async () => {
   expect(resultE.css).toEqual('a { color: green; }')
   expect(resultE.warnings()).toHaveLength(0)
 })
+
+// situation encountered when using postcs-jit-props for Open Props
+// together with having @nuxt/fonts module with no global font definition
+// it still creates an empty .nuxt/nuxt-fonts-global.css file
+// and postcs-jit-props started to fail trying to parse it
+// --
+// fixed by adding "node.first" null check into parsing method
+// (lines 130 and 136 in index.js)
+
+it('Parses an empty file and rule', async () => {
+  const pluginInstance = plugin({ files: ['./props.test.empty.css'] });
+  let result = await postcss([pluginInstance]).process('');
+  expect(result.css).toEqual("");
+  expect(result.warnings()).toHaveLength(0);
+})
